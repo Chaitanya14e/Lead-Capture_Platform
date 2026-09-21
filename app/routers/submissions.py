@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -9,9 +11,15 @@ from app.schemas.submission import (
     SubmissionResponse,
 )
 
+
 router = APIRouter(
     prefix="/submissions",
     tags=["Submissions"],
+)
+
+
+limiter = Limiter(
+    key_func=get_remote_address,
 )
 
 
@@ -20,9 +28,10 @@ router = APIRouter(
     response_model=SubmissionResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit("5/minute")
 def create_submission(
-    submission_data: SubmissionCreate,
     request: Request,
+    submission_data: SubmissionCreate,
     db: Session = Depends(get_db),
 ):
     widget = (
@@ -38,6 +47,12 @@ def create_submission(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Widget not found or inactive",
+        )
+
+    if submission_data.honeypot:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Spam submission detected",
         )
 
     client_ip = None
