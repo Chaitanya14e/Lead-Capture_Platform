@@ -8,7 +8,10 @@ class SubmissionCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     email: EmailStr
     message: str = Field(min_length=1, max_length=5000)
-    honeypot: str | None = None
+    honeypot: str | None = Field(
+        default=None,
+        max_length=100,
+    )
 
 
 class SubmissionResponse(BaseModel):
