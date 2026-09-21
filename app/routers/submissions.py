@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
+from app.services.notification_service import send_with_retry
 
 from app.db import get_db
 from app.models.submission import Submission
@@ -32,6 +33,7 @@ limiter = Limiter(
 def create_submission(
     request: Request,
     submission_data: SubmissionCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     widget = (
@@ -76,5 +78,9 @@ def create_submission(
     db.add(submission)
     db.commit()
     db.refresh(submission)
+    background_tasks.add_task(
+        send_with_retry,
+        submission.id,
+    )
 
     return submission
