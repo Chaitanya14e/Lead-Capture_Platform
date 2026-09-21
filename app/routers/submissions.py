@@ -10,7 +10,7 @@ from app.schemas.submission import (
     SubmissionCreate,
     SubmissionResponse,
 )
-
+from app.services.geo_service import get_geo
 
 router = APIRouter(
     prefix="/submissions",
@@ -60,14 +60,16 @@ def create_submission(
     if request.client:
         client_ip = request.client.host
 
+    geo_data = get_geo(client_ip)
+
     submission = Submission(
         widget_id=submission_data.widget_id,
         name=submission_data.name,
         email=submission_data.email,
         message=submission_data.message,
         ip_address=client_ip,
-        country=None,
-        city=None,
+        country=geo_data["country"],
+        city=geo_data["city"],
         spam=False,
     )
 
