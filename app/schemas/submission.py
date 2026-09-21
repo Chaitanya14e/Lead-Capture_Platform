@@ -5,6 +5,10 @@ from pydantic import BaseModel, EmailStr, Field
 
 class SubmissionCreate(BaseModel):
     widget_id: int
+    idempotency_key: str = Field(
+        min_length=1,
+        max_length=100,
+    )
     name: str = Field(min_length=1, max_length=100)
     email: EmailStr
     message: str = Field(min_length=1, max_length=5000)

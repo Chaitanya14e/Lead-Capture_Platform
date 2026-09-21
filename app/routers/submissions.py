@@ -1,23 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
-from app.services.notification_service import send_with_retry
 
 from app.db import get_db
 from app.models.submission import Submission
 from app.models.widget import Widget
-from app.schemas.submission import (
-    SubmissionCreate,
-    SubmissionResponse,
-)
+from app.schemas.submission import SubmissionCreate, SubmissionResponse
 from app.services.geo_service import get_geo
+from app.services.notification_service import send_with_retry
 
 router = APIRouter(
     prefix="/submissions",
     tags=["Submissions"],
 )
-
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -57,6 +53,18 @@ def create_submission(
             detail="Spam submission detected",
         )
 
+    existing_submission = (
+        db.query(Submission)
+        .filter(
+            Submission.widget_id == submission_data.widget_id,
+            Submission.idempotency_key == submission_data.idempotency_key,
+        )
+        .first()
+    )
+
+    if existing_submission:
+        return existing_submission
+
     client_ip = None
 
     if request.client:
@@ -66,6 +74,7 @@ def create_submission(
 
     submission = Submission(
         widget_id=submission_data.widget_id,
+        idempotency_key=submission_data.idempotency_key,
         name=submission_data.name,
         email=submission_data.email,
         message=submission_data.message,
@@ -78,6 +87,7 @@ def create_submission(
     db.add(submission)
     db.commit()
     db.refresh(submission)
+
     background_tasks.add_task(
         send_with_retry,
         submission.id,

@@ -1,10 +1,17 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Integer, String, Text, DateTime, Boolean
+from sqlalchemy import Boolean, ForeignKey, String, Text, DateTime, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 
+__table_args__ = (
+    UniqueConstraint(
+        "widget_id",
+        "idempotency_key",
+        name="uq_submission_widget_idempotency",
+    ),
+)
 
 class Submission(Base):
     __tablename__ = "submissions"
@@ -45,5 +52,9 @@ class Submission(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
+        nullable=False,
+    )
+    idempotency_key: Mapped[str] = mapped_column(
+        String(100),
         nullable=False,
     )
