@@ -1,0 +1,130 @@
+name: flyrank-embeddable-widget-platform
+
+title: Embeddable Widget & Lead-Capture Platform
+
+description: >
+  A multi-tenant FastAPI platform that allows customers to create
+  embeddable widgets, install them on external websites using a
+  JavaScript snippet, collect public submissions, apply validation,
+  rate limiting and spam protection, enrich submissions with
+  geo-location, persist leads in PostgreSQL, and expose dashboard
+  statistics.
+
+stack:
+  backend:
+    - Python
+    - FastAPI
+    - SQLAlchemy
+    - Pydantic
+
+  database:
+    - PostgreSQL
+    - Alembic
+
+  security:
+    - JWT
+    - bcrypt
+    - CORS
+
+  protection:
+    - SlowAPI
+    - Honeypot
+    - Idempotency
+
+  testing:
+    - Pytest
+
+  infrastructure:
+    - Docker
+
+architecture:
+  type: layered
+
+  layers:
+    - routers
+    - schemas
+    - services
+    - models
+    - database
+
+core_features:
+  - authenticated user management
+  - multi-tenant widget CRUD
+  - public widget configuration
+  - embeddable JavaScript widget
+  - cross-origin submissions
+  - submission validation
+  - IP-based rate limiting
+  - honeypot spam protection
+  - idempotent submissions
+  - geo-provider fallback
+  - background notification retries
+  - dashboard statistics
+  - cached widget delivery
+  - versioned widget delivery
+  - PostgreSQL persistence
+  - Alembic migrations
+
+public_endpoints:
+  - POST /auth/register
+  - POST /auth/login
+  - GET /widget.js
+  - GET /widgets/public/{public_key}/config
+  - POST /submissions
+
+authenticated_endpoints:
+  - GET /auth/me
+  - POST /widgets
+  - GET /widgets
+  - GET /widgets/{widget_id}
+  - PATCH /widgets/{widget_id}
+  - DELETE /widgets/{widget_id}
+  - GET /dashboard/submissions
+  - GET /dashboard/stats
+  - GET /dashboard/widgets/{widget_id}/stats
+
+local_services:
+  api:
+    host: 127.0.0.1
+    port: 8000
+
+  customer_site:
+    host: 127.0.0.1
+    port: 5500
+
+  postgres:
+    host: 127.0.0.1
+    port: 5433
+
+testing:
+  command: pytest -v
+  latest_result: "9 passed"
+
+database:
+  migrations: alembic
+  database: PostgreSQL
+
+non_goals:
+  - production CDN deployment
+  - production hosting
+  - advanced widget customization
+  - production email provider integration
+  - complex analytics
+  - payment processing
+
+security:
+  secrets:
+    - JWT_SECRET_KEY
+    - DATABASE_URL
+
+  secret_storage:
+    environment_variables: true
+
+  committed_secrets: false
+
+documentation:
+  - README.md
+  - DESIGN.md
+  - EVIDENCE.md
+  - BUILDLOG.md
+  - capstone.yaml

@@ -7,7 +7,8 @@ from app.middleware.rate_limit import limiter
 from app.routers.auth import router as auth_router
 from app.routers.submissions import router as submissions_router
 from app.routers.widgets import router as widgets_router
-
+from app.routers.widget_delivery import router as widget_delivery_router
+from app.routers.dashboard import router as dashboard_router
 
 app = FastAPI(
     title="FlyRank Widget Platform",
@@ -43,7 +44,8 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(widgets_router)
 app.include_router(submissions_router)
-
+app.include_router(widget_delivery_router)
+app.include_router(dashboard_router)
 
 @app.get("/")
 def root():

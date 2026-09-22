@@ -26,3 +26,11 @@ class WidgetResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+    
+class PublicWidgetConfig(BaseModel):
+    id: int
+    name: str
+    widget_type: str
+    description: str | None
+    public_key: str
+    is_active: bool

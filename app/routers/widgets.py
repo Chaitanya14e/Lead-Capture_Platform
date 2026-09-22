@@ -11,6 +11,7 @@ from app.schemas.widget import (
     WidgetCreate,
     WidgetResponse,
     WidgetUpdate,
+    PublicWidgetConfig
 )
 
 router = APIRouter(
@@ -157,3 +158,28 @@ def delete_widget(
     db.commit()
 
     return None
+
+@router.get(
+    "/public/{public_key}/config",
+    response_model=PublicWidgetConfig
+)
+def get_public_widget_config(
+    public_key: str,
+    db: Session = Depends(get_db)
+):
+    widget = (
+        db.query(Widget)
+        .filter(
+            Widget.public_key == public_key,
+            Widget.is_active == True
+        )
+        .first()
+    )
+
+    if not widget:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Widget not found or inactive"
+        )
+
+    return widget
