@@ -1,20 +1,34 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, String, Text, DateTime, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    Index,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 
-__table_args__ = (
-    UniqueConstraint(
-        "widget_id",
-        "idempotency_key",
-        name="uq_submission_widget_idempotency",
-    ),
-)
 
 class Submission(Base):
     __tablename__ = "submissions"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "widget_id",
+            "idempotency_key",
+            name="uq_submission_widget_idempotency",
+        ),
+        Index(
+            "ix_submissions_widget_created",
+            "widget_id",
+            "created_at",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -24,9 +38,25 @@ class Submission(Base):
         index=True,
     )
 
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), nullable=False)
-    message: Mapped[str] = mapped_column(Text, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    message: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
 
     ip_address: Mapped[str | None] = mapped_column(
         String(45),
@@ -52,9 +82,5 @@ class Submission(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
-        nullable=False,
-    )
-    idempotency_key: Mapped[str] = mapped_column(
-        String(100),
         nullable=False,
     )
